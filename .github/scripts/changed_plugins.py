@@ -41,7 +41,7 @@ def main():
     with args.output.open('a') as output:
         output.write('plugins=' + json.dumps(plugins) + '\n')
         output.write('has_plugins=' + str(bool(plugins)).lower() + '\n')
-        output.write('flexpair_changed=' + str('flexpair-color-palette' in plugins).lower() + '\n')
+
     print('Selected plugins:', json.dumps(plugins))
 
 
