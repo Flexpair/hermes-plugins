@@ -7,7 +7,9 @@ On enable, the plugin applies the accent for the currently rendered mode:
 - Dark mode: `#00FFFF`.
 - Light mode: `#157878`.
 
-Switching between light and dark applies the corresponding initial color again. The OKLCH picker still lets you choose another color; ordinary repaints do not reset your choice. Colors are temporary, not persisted. Reset and disabling the plugin restore the active theme's original accent.
+Switching between light and dark applies the corresponding initial color again, even when the status bar is not mounted. The OKLCH picker still lets you choose another color; repaints and remounts do not reset your choice. Colors are temporary, not persisted. Reset and disabling the plugin restore the active theme's original accent.
+
+Mode tracking belongs to the plugin's enable/disable lifecycle. It observes Hermes's root `data-hermes-mode` attribute, which core updates for the actually painted mode. Repeated same-mode updates are ignored; disabling disconnects the observer. No private core imports or core changes are required.
 
 The values above are the exact accent overrides passed to Hermes. Hermes derives the rest of the palette and may adapt the painted accent for contrast, depending on the active theme.
 
@@ -31,7 +33,7 @@ npm test
 hermes plugins validate . --json
 ```
 
-`npm test` rebuilds `desktop/plugin.js` and exercises the bundled plugin with mocked SDK and React lifecycle hooks. It checks both initial colors, mode switches, manual picks, reset, and disable cleanup. This is not a visual desktop integration test.
+`npm test` rebuilds `desktop/plugin.js` and exercises the bundled plugin with mocked SDK, React and DOM APIs. It checks both initial colors without mounting the picker, unmounted mode switches, remounts, same-mode updates, reset, delayed boot initialization, and observer cleanup on disable. This is not a visual desktop integration test.
 
 Commit the rebuilt `desktop/plugin.js`; Hermes loads that artifact directly.
 

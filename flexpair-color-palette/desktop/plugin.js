@@ -1,6 +1,5 @@
 // src/plugin.tsx
-import { $accentOverride as $accentOverride2, PALETTE_AREA, setAccentOverride as setAccentOverride2, STATUSBAR_AREAS, useTheme as useTheme2 } from "@hermes/plugin-sdk";
-import { useEffect as useEffect2 } from "react";
+import { $accentOverride as $accentOverride2, PALETTE_AREA, setAccentOverride as setAccentOverride2, STATUSBAR_AREAS } from "@hermes/plugin-sdk";
 
 // src/picker.tsx
 import {
@@ -258,26 +257,33 @@ function AccentPickerTrigger() {
 
 // src/plugin.tsx
 import { jsx as jsx2 } from "react/jsx-runtime";
-function FlexpairColorPaletteTrigger() {
-  const { renderedMode } = useTheme2();
-  useEffect2(() => {
-    setAccentOverride2(renderedMode === "dark" ? "#00FFFF" : "#157878");
-  }, [renderedMode]);
-  return /* @__PURE__ */ jsx2(AccentPickerTrigger, {});
-}
 var plugin = {
   id: "flexpair-color-palette",
   name: "Flexpair Color Palette",
   description: "Pick the theme accent from an OKLCH color picker in the status bar; the palette re-derives live. Authoring tool \u2014 the color is not persisted.",
   defaultEnabled: false,
   register(ctx) {
-    ctx.onDispose(() => setAccentOverride2(null));
+    const root = document.documentElement;
+    let lastMode;
+    const applyInitialAccent = () => {
+      const mode = root.dataset.hermesMode;
+      if (mode !== "dark" && mode !== "light" || mode === lastMode) return;
+      lastMode = mode;
+      setAccentOverride2(mode === "dark" ? "#00FFFF" : "#157878");
+    };
+    const observer = new MutationObserver(applyInitialAccent);
+    observer.observe(root, { attributes: true, attributeFilter: ["data-hermes-mode"] });
+    applyInitialAccent();
+    ctx.onDispose(() => {
+      observer.disconnect();
+      setAccentOverride2(null);
+    });
     ctx.registerMany([
       {
         id: "picker",
         area: STATUSBAR_AREAS.right,
         order: 90,
-        render: () => /* @__PURE__ */ jsx2(FlexpairColorPaletteTrigger, {})
+        render: () => /* @__PURE__ */ jsx2(AccentPickerTrigger, {})
       },
       {
         id: "reset",

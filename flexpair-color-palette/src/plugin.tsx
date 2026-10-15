@@ -14,22 +14,9 @@
  */
 
 import type { HermesPlugin, PaletteContribution } from '@hermes/plugin-sdk'
-import { $accentOverride, PALETTE_AREA, setAccentOverride, STATUSBAR_AREAS, useTheme } from '@hermes/plugin-sdk'
-import { useEffect } from 'react'
+import { $accentOverride, PALETTE_AREA, setAccentOverride, STATUSBAR_AREAS } from '@hermes/plugin-sdk'
 
 import { AccentPickerTrigger } from './picker.tsx'
-
-function FlexpairColorPaletteTrigger() {
-  const { renderedMode } = useTheme()
-
-  // Apply the initial accent on enable and on a mode switch, not on every
-  // repaint: dragging the picker must remain free to choose another color.
-  useEffect(() => {
-    setAccentOverride(renderedMode === 'dark' ? '#00FFFF' : '#157878')
-  }, [renderedMode])
-
-  return <AccentPickerTrigger />
-}
 
 const plugin: HermesPlugin = {
   id: 'flexpair-color-palette',
@@ -38,17 +25,33 @@ const plugin: HermesPlugin = {
     'Pick the theme accent from an OKLCH color picker in the status bar; the palette re-derives live. Authoring tool — the color is not persisted.',
   defaultEnabled: false,
   register(ctx) {
+    const root = document.documentElement
+    let lastMode: string | undefined
+    // Core publishes the painted mode here, including boot and system changes.
+    // Watch it for the plugin's lifetime, independently of statusbar mounts.
+    const applyInitialAccent = () => {
+      const mode = root.dataset.hermesMode
+      if ((mode !== 'dark' && mode !== 'light') || mode === lastMode) return
+      lastMode = mode
+      setAccentOverride(mode === 'dark' ? '#00FFFF' : '#157878')
+    }
+    const observer = new MutationObserver(applyInitialAccent)
+    observer.observe(root, { attributes: true, attributeFilter: ['data-hermes-mode'] })
+    applyInitialAccent()
     // The override is a scratch value, not a setting. Dropping it on unregister
     // means disabling the plugin (or reloading) returns every surface to the
     // authored theme instead of stranding a color with no control to clear it.
-    ctx.onDispose(() => setAccentOverride(null))
+    ctx.onDispose(() => {
+      observer.disconnect()
+      setAccentOverride(null)
+    })
 
     ctx.registerMany([
       {
         id: 'picker',
         area: STATUSBAR_AREAS.right,
         order: 90,
-        render: () => <FlexpairColorPaletteTrigger />
+        render: () => <AccentPickerTrigger />
       },
       {
         id: 'reset',
