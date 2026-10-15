@@ -1,6 +1,6 @@
 name: tests
 
-# Every plugin in this repo, against current Hermes core, on Linux, macOS and Windows.
+# Changed plugins on PRs/pushes; all plugins on scheduled/manual runs.
 # The nightly run catches a core change that breaks a plugin before a user does.
 on:
   push:
@@ -15,6 +15,8 @@ permissions:
 
 jobs:
   flexpair-color-palette:
+    needs: discover
+    if: needs.discover.outputs.flexpair_changed == 'true'
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
@@ -36,18 +38,23 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       plugins: ${{ steps.list.outputs.plugins }}
+      has_plugins: ${{ steps.list.outputs.has_plugins }}
+      flexpair_changed: ${{ steps.list.outputs.flexpair_changed }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Test plugin selection
+        run: python3 -m unittest discover -s .github/scripts -p 'test_*.py' -v
       - id: list
-        # A plugin is any top-level directory with a plugin.yaml or plugin.json. Every plugin is validated;
-        # pytest runs only where the plugin ships a tests/ dir (portable MCP + skill packages have none).
-        run: |
-          plugins=$(for d in */; do d=${d%/}; { [ -f "$d/plugin.yaml" ] || [ -f "$d/plugin.json" ]; } && echo "$d"; done | jq -R . | jq -sc .)
-          echo "plugins=$plugins" >> "$GITHUB_OUTPUT"
-          echo "Plugins: $plugins"
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+        run: python3 .github/scripts/changed_plugins.py --event-name "$EVENT_NAME" --event-path "$GITHUB_EVENT_PATH" --output "$GITHUB_OUTPUT"
 
   pytest:
     needs: discover
+    if: needs.discover.outputs.has_plugins == 'true'
     strategy:
       fail-fast: false
       matrix:
