@@ -1,0 +1,24 @@
+name: Select changed plugins
+description: Select changed plugins for PRs and pushes, or all plugins for scheduled and manual runs.
+outputs:
+  plugins:
+    description: JSON array of selected plugin directories.
+    value: ${{ steps.list.outputs.plugins }}
+  has_plugins:
+    description: Whether any plugin was selected.
+    value: ${{ steps.list.outputs.has_plugins }}
+runs:
+  using: composite
+  steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        ref: ${{ github.event.pull_request.head.sha || github.sha }}
+    - name: Test plugin selection
+      shell: bash
+      run: python3 -m unittest discover -s .github/scripts -p 'test_*.py' -v
+    - id: list
+      shell: bash
+      env:
+        EVENT_NAME: ${{ github.event_name }}
+      run: python3 .github/scripts/changed_plugins.py --event-name "$EVENT_NAME" --event-path "$GITHUB_EVENT_PATH" --output "$GITHUB_OUTPUT"

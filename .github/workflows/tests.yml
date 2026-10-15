@@ -18,23 +18,14 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       plugins: ${{ steps.list.outputs.plugins }}
-      has_plugins: ${{ steps.list.outputs.has_plugins }}
-
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-      - name: Test plugin selection
-        run: python3 -m unittest discover -s .github/scripts -p 'test_*.py' -v
       - id: list
-        env:
-          EVENT_NAME: ${{ github.event_name }}
-        run: python3 .github/scripts/changed_plugins.py --event-name "$EVENT_NAME" --event-path "$GITHUB_EVENT_PATH" --output "$GITHUB_OUTPUT"
+        uses: ./.github/actions/select-changed-plugins
 
   pytest:
     needs: discover
-    if: needs.discover.outputs.has_plugins == 'true'
+    if: needs.discover.outputs.plugins != '[]'
     strategy:
       fail-fast: false
       matrix:
