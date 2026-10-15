@@ -14,6 +14,24 @@ permissions:
   contents: read
 
 jobs:
+  flexpair-color-palette:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: flexpair-color-palette/package-lock.json
+      - name: Test the bundled desktop plugin
+        working-directory: flexpair-color-palette
+        run: npm ci --ignore-scripts && npm test
+      - name: Verify the committed artifact is current
+        run: git diff --exit-code -- flexpair-color-palette/desktop/plugin.js
+
   discover:
     runs-on: ubuntu-latest
     outputs:

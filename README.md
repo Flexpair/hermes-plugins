@@ -59,6 +59,13 @@ Catalog entries come in two tiers:
 
 ## The plugins
 
+### Flexpair fork addition
+
+[Flexpair Color Palette](flexpair-color-palette/) copies Accent Picker with initial
+accent overrides `#00FFFF` in dark mode and `#157878` in light mode. This is a
+Flexpair-maintained desktop-only plugin, not an official Nous catalog entry.
+It follows the existing desktop plugin layout without Python scaffolding.
+
 <table>
 <tr>
 <td width="50%" valign="top">
