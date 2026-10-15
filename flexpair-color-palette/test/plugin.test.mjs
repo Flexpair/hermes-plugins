@@ -5,15 +5,12 @@ import vm from 'node:vm'
 
 async function loadPlugin(mode) {
   let override = null
-  let renderedMode = mode
-  let previousDependencies
-  let contributions
+  const contributions = []
   let dispose
   const calls = []
   const root = { dataset: { hermesMode: mode } }
   const observers = new Set()
   const context = vm.createContext({
-    navigator: { clipboard: { writeText: async () => {} } },
     document: { documentElement: root },
     MutationObserver: class {
       constructor(callback) { this.callback = callback }
@@ -27,28 +24,9 @@ async function loadPlugin(mode) {
     }
   })
   const setAccentOverride = color => { override = color; calls.push(color) }
-  const sdk = {
-    $accentOverride: { get: () => override },
-    PALETTE_AREA: 'palette', STATUSBAR_AREAS: { right: 'right' },
-    setAccentOverride, useTheme: () => ({ renderedMode, theme: { colors: { primary: override } } }),
-    contrastRatio: () => 1, hexToOklch: () => null, maxChroma: () => 0,
-    oklchToHex: () => '', oklchToSrgb255: () => null,
-    Popover: () => null, PopoverContent: () => null, PopoverTrigger: () => null,
-    useValue: () => override
-  }
-  const react = {
-    useEffect: (effect, dependencies) => {
-      if (!previousDependencies || dependencies.some((value, i) => value !== previousDependencies[i])) {
-        previousDependencies = dependencies
-        effect()
-      }
-    },
-    useCallback: value => value, useMemo: fn => fn(),
-    useRef: value => ({ current: value }), useState: value => [value, () => {}]
-  }
-  const jsx = (type, props) => ({ type, props })
+  const sdk = { setAccentOverride }
   const modules = new Map(Object.entries({
-    '@hermes/plugin-sdk': sdk, react, 'react/jsx-runtime': { jsx, jsxs: jsx }
+    '@hermes/plugin-sdk': sdk
   }).map(([name, exports]) => [name, new vm.SyntheticModule(Object.keys(exports), function () {
     for (const [key, value] of Object.entries(exports)) this.setExport(key, value)
   }, { context })]))
@@ -60,22 +38,19 @@ async function loadPlugin(mode) {
   })
   await module.evaluate()
   const plugin = module.namespace.default
-  plugin.register({ onDispose: fn => { dispose = fn }, registerMany: items => { contributions = items } })
-  const render = () => {
-    const element = contributions.find(item => item.id === 'picker').render()
-    element.type(element.props)
-  }
+  plugin.register({
+    onDispose: fn => { dispose = fn },
+    register: item => { contributions.push(item) },
+    registerMany: items => { contributions.push(...items) }
+  })
   return {
-    plugin, calls, contributions, render, dispose,
+    plugin, calls, contributions, dispose,
     get override() { return override },
     setMode: value => {
-      renderedMode = value
       root.dataset.hermesMode = value
       for (const observer of observers) observer.callback()
     },
-    remount: () => { previousDependencies = undefined; render() },
-    get observerCount() { return observers.size },
-    pick: setAccentOverride
+    get observerCount() { return observers.size }
   }
 }
 
@@ -88,7 +63,7 @@ for (const [mode, expected] of [['dark', '#00FFFF'], ['light', '#157878']]) {
   })
 }
 
-test('mode switches select the corresponding initial color without mounting the picker', async () => {
+test('mode switches select the corresponding fixed color', async () => {
   const runtime = await loadPlugin('dark')
   runtime.setMode('light')
   assert.equal(runtime.override, '#157878')
@@ -96,28 +71,17 @@ test('mode switches select the corresponding initial color without mounting the 
   assert.equal(runtime.override, '#00FFFF')
 })
 
-test('manual picks and reset survive same-mode repaint; disable clears override', async () => {
+test('registers no picker or palette commands', async () => {
   const runtime = await loadPlugin('dark')
-  runtime.render()
-  runtime.pick('#123456')
-  runtime.remount()
-  assert.equal(runtime.override, '#123456')
-  runtime.contributions.find(item => item.id === 'reset').data.run()
-  runtime.remount()
-  assert.equal(runtime.override, null)
-  runtime.pick('#ABCDEF')
-  runtime.dispose()
-  assert.equal(runtime.override, null)
+  assert.deepEqual(runtime.contributions, [])
 })
 
-test('same-mode notifications preserve manual picks and reset', async () => {
+test('same-mode notifications do not reapply the accent', async () => {
   const runtime = await loadPlugin('dark')
-  runtime.pick('#123456')
+  const calls = runtime.calls.length
   runtime.setMode('dark')
-  assert.equal(runtime.override, '#123456')
-  runtime.contributions.find(item => item.id === 'reset').data.run()
-  runtime.setMode('dark')
-  assert.equal(runtime.override, null)
+  assert.equal(runtime.override, '#00FFFF')
+  assert.equal(runtime.calls.length, calls)
 })
 
 test('disable disconnects mode tracking and cannot reapply the accent', async () => {

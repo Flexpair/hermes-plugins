@@ -4,9 +4,8 @@ version: 1.0.0
 author: Flexpair
 homepage: https://github.com/Flexpair/hermes-plugins/tree/main/flexpair-color-palette
 description: >
-  OKLCH accent colour picker with initial dark #00FFFF and light #157878 accents.
-  Drag it and the
-  whole theme retints live; the palette re-derives from the one colour you pick.
-  A theme-authoring tool: the colour is scratch state and is never persisted.
+  Fixed Flexpair accents: dark #00FFFF and light #157878.
+  Automatically follows the rendered mode, without a picker or color commands.
+  Disabling restores the active theme's original accent.
   Desktop-only (desktop/plugin.js); no agent tools, hooks or env vars.
 tags: [desktop, theme, appearance]

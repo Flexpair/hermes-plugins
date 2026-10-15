@@ -1,19 +1,19 @@
 # Flexpair Color Palette — Hermes Desktop plugin
 
-A copy of Nous Research's [Accent Picker](../accent-picker/README.md), with a separate plugin identity and Flexpair's initial accent colors. The original plugin remains unchanged; its MIT license is retained.
+Derived from Nous Research's [Accent Picker](../accent-picker/README.md), with a separate plugin identity and fixed Flexpair accent colors. The picker and palette commands are removed. The original plugin remains unchanged; its MIT license is retained.
 
 On enable, the plugin applies the accent for the currently rendered mode:
 
 - Dark mode: `#00FFFF`.
 - Light mode: `#157878`.
 
-Switching between light and dark applies the corresponding initial color again, even when the status bar is not mounted. The OKLCH picker still lets you choose another color; repaints and remounts do not reset your choice. Colors are temporary, not persisted. Reset and disabling the plugin restore the active theme's original accent.
+Switching between light and dark automatically applies the corresponding color. There is no status bar picker, manual color control, reset command or clipboard command. Disabling the plugin restores the active theme's original accent; no theme settings are persisted.
 
 Mode tracking belongs to the plugin's enable/disable lifecycle. It observes Hermes's root `data-hermes-mode` attribute, which core updates for the actually painted mode. Repeated same-mode updates are ignored; disabling disconnects the observer. No private core imports or core changes are required.
 
 The values above are the exact accent overrides passed to Hermes. Hermes derives the rest of the palette and may adapt the painted accent for contrast, depending on the active theme.
 
-Enable only one accent picker at a time: both this plugin and the original Accent Picker control Hermes's shared accent override.
+Do not enable the original Accent Picker alongside this plugin: both control Hermes's shared accent override.
 
 ## Install locally
 
@@ -33,15 +33,14 @@ npm test
 hermes plugins validate . --json
 ```
 
-`npm test` rebuilds `desktop/plugin.js` and exercises the bundled plugin with mocked SDK, React and DOM APIs. It checks both initial colors without mounting the picker, unmounted mode switches, remounts, same-mode updates, reset, delayed boot initialization, and observer cleanup on disable. This is not a visual desktop integration test.
+`npm test` rebuilds `desktop/plugin.js` and exercises the bundled plugin with mocked SDK and DOM APIs. It checks both initial colors, mode switches, absence of UI and palette commands, same-mode updates, delayed boot initialization, and observer cleanup on disable. This is not a visual desktop integration test.
 
 Commit the rebuilt `desktop/plugin.js`; Hermes loads that artifact directly.
 
 ## Layout
 
 - `desktop/plugin.js` — loadable ESM artifact.
-- `src/plugin.tsx` — plugin identity, mode-specific initialization and palette commands.
-- `src/picker.tsx` — original OKLCH picker.
+- `src/plugin.tsx` — plugin identity and mode-specific accent lifecycle.
 - `test/plugin.test.mjs` — dependency-free bundled-plugin tests.
 - `plugin.yaml` — Hermes plugin manifest.
 

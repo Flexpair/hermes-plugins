@@ -61,8 +61,8 @@ Catalog entries come in two tiers:
 
 ### Flexpair fork addition
 
-[Flexpair Color Palette](flexpair-color-palette/) copies Accent Picker with initial
-accent overrides `#00FFFF` in dark mode and `#157878` in light mode. This is a
+[Flexpair Color Palette](flexpair-color-palette/) derives from Accent Picker with fixed
+accent overrides `#00FFFF` in dark mode and `#157878` in light mode, without a picker or color commands. This is a
 Flexpair-maintained desktop-only plugin, not an official Nous catalog entry.
 It follows the existing desktop plugin layout without Python scaffolding.
 

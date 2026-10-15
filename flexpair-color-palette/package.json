@@ -2,7 +2,7 @@
   "name": "flexpair-color-palette",
   "version": "1.0.0",
   "private": true,
-  "description": "OKLCH accent colour picker for the Hermes Desktop status bar — a theme-authoring tool that retints the whole app live.",
+  "description": "Fixed Flexpair accents for Hermes Desktop: #00FFFF in dark mode and #157878 in light mode, without a picker.",
   "license": "MIT",
   "type": "module",
   "scripts": {
