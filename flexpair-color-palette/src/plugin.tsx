@@ -6,9 +6,21 @@ const plugin: HermesPlugin = {
   id: 'flexpair-color-palette',
   name: 'Flexpair Color Palette',
   description:
-    'Apply fixed Flexpair accents: #00FFFF in dark mode and #157878 in light mode. No picker or color commands.',
+    'Apply fixed Flexpair accents and 150% desktop zoom on enable. No picker or color commands.',
   defaultEnabled: false,
   register(ctx) {
+    // Use the existing Electron bridge, not private core imports or CSS scaling.
+    // Zoom is not yet part of the plugin SDK; older hosts keep accent behavior.
+    const desktopWindow = window as Window & {
+      hermesDesktop?: { zoom?: { setPercent?: (percent: number) => void } }
+    }
+    const zoom = desktopWindow.hermesDesktop?.zoom
+    try {
+      if (typeof zoom?.setPercent === 'function') zoom.setPercent(150)
+    } catch {
+      // An incompatible host must not prevent the primary accent behavior.
+    }
+
     const root = document.documentElement
     let lastMode: string | undefined
     // Core publishes the painted mode here, including boot and system changes.

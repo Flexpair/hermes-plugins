@@ -2,7 +2,7 @@
   "name": "flexpair-color-palette",
   "version": "1.0.0",
   "private": true,
-  "description": "Fixed Flexpair accents for Hermes Desktop: #00FFFF in dark mode and #157878 in light mode, without a picker.",
+  "description": "Fixed Flexpair accents and 150% zoom for Hermes Desktop, without a picker.",
   "license": "MIT",
   "type": "module",
   "scripts": {
