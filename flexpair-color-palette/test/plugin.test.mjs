@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises'
 import test from 'node:test'
 import vm from 'node:vm'
 
-async function loadPlugin(mode) {
+async function loadPlugin(mode, desktop = { zoom: { setPercent: () => {} } }) {
   let override = null
   const contributions = []
   let dispose
@@ -11,6 +11,7 @@ async function loadPlugin(mode) {
   const root = { dataset: { hermesMode: mode } }
   const observers = new Set()
   const context = vm.createContext({
+    window: { hermesDesktop: desktop },
     document: { documentElement: root },
     MutationObserver: class {
       constructor(callback) { this.callback = callback }
@@ -102,4 +103,45 @@ test('initialization waits for a valid painted mode', async () => {
   assert.equal(runtime.override, null)
   runtime.setMode('light')
   assert.equal(runtime.override, '#157878')
+})
+
+test('enable applies 150 percent once without locking manual zoom', async () => {
+  const zoomCalls = []
+  const desktop = { zoom: { setPercent: value => zoomCalls.push(value) } }
+  const runtime = await loadPlugin('dark', desktop)
+  assert.deepEqual(zoomCalls, [150])
+  desktop.zoom.setPercent(120)
+  runtime.setMode('light')
+  runtime.dispose()
+  assert.deepEqual(zoomCalls, [150, 120])
+})
+
+for (const desktop of [undefined, {}, { zoom: {} }]) {
+  test(`missing zoom bridge preserves accent behavior: ${JSON.stringify(desktop)}`, async () => {
+    const runtime = await loadPlugin('light', desktop ?? null)
+    assert.equal(runtime.override, '#157878')
+    runtime.dispose()
+    assert.equal(runtime.override, null)
+  })
+}
+
+test('a throwing zoom bridge does not prevent accent initialization or cleanup', async () => {
+  const runtime = await loadPlugin('dark', {
+    zoom: { setPercent: () => { throw new Error('Unavailable bridge') } }
+  })
+  assert.equal(runtime.override, '#00FFFF')
+  runtime.dispose()
+  assert.equal(runtime.override, null)
+  assert.equal(runtime.observerCount, 0)
+})
+
+test('re-enabling applies 150 percent after a manual zoom change', async () => {
+  const zoomCalls = []
+  const desktop = { zoom: { setPercent: value => zoomCalls.push(value) } }
+  const first = await loadPlugin('dark', desktop)
+  desktop.zoom.setPercent(120)
+  first.dispose()
+  const second = await loadPlugin('dark', desktop)
+  assert.deepEqual(zoomCalls, [150, 120, 150])
+  second.dispose()
 })

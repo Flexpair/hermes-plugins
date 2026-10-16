@@ -3,9 +3,15 @@ import { setAccentOverride } from "@hermes/plugin-sdk";
 var plugin = {
   id: "flexpair-color-palette",
   name: "Flexpair Color Palette",
-  description: "Apply fixed Flexpair accents: #00FFFF in dark mode and #157878 in light mode. No picker or color commands.",
+  description: "Apply fixed Flexpair accents and 150% desktop zoom on enable. No picker or color commands.",
   defaultEnabled: false,
   register(ctx) {
+    const desktopWindow = window;
+    const zoom = desktopWindow.hermesDesktop?.zoom;
+    try {
+      if (typeof zoom?.setPercent === "function") zoom.setPercent(150);
+    } catch {
+    }
     const root = document.documentElement;
     let lastMode;
     const applyInitialAccent = () => {

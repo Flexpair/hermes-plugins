@@ -6,6 +6,7 @@ homepage: https://github.com/Flexpair/hermes-plugins/tree/main/flexpair-color-pa
 description: >
   Fixed Flexpair accents: dark #00FFFF and light #157878.
   Automatically follows the rendered mode, without a picker or color commands.
+  Sets desktop zoom to 150% on enable; manual zoom remains available.
   Disabling restores the active theme's original accent.
   Desktop-only (desktop/plugin.js); no agent tools, hooks or env vars.
 tags: [desktop, theme, appearance]
