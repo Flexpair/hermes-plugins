@@ -19,11 +19,17 @@ has its own browser-test workflow instead of entering the Python plugin matrix.
   Alibaba Cloud (Coding Plan), Alibaba Cloud (Coding Plan, China).
 - Account rows: **MiniMax** and **Qwen Code**, both disconnected rows and connected
   rows including their Remove buttons.
-- Skills, messengers, model pickers, onboarding, CLI and gateway behavior are not
-  filtered by this version.
+- Skill rows: **page-agent**, **siyuan** and **yuanbao** in the local Skills list
+  and its official catalog list, including Install and Toggle controls.
+- Messenger rows: **DingTalk**, **Feishu / Lark**, **WeCom (group bot)**,
+  **WeCom (app)**, **Weixin / WeChat (Personal)**, **QQ Bot** and **Yuanbao (元宝)**,
+  whether enabled or disabled.
+- Model pickers, onboarding, CLI, external skill-hub searches and gateway behavior
+  are not filtered by this version. Detail panels and chat text remain unchanged.
 
 The selection uses company affiliation, not the language of an entry or a
-person's nationality. Multi-provider services such as OpenRouter, NVIDIA and
+person's nationality. Neutral skills are not hidden merely because their text
+mentions Qwen or DeepSeek. Multi-provider services such as OpenRouter, NVIDIA and
 NovitaAI remain visible. This is a UI preference, **not** a network, authorization
 or compliance boundary; hidden providers can still be used through other paths.
 
@@ -55,8 +61,10 @@ npm test
 
 The suite loads the actual `plugin.js` into Chromium with fixed DOM fixtures. It
 checks target and neutral-provider visibility, connected-account Remove buttons,
-late-rendered rows, title changes, visible ancestors, unchanged accent, disposal,
-re-registration and observer cleanup. Test fixtures contain no user credentials.
+local and official-catalog skill rows, messenger rows, late-rendered rows, title
+and class changes, row reinsertion, active Skills-tab scope, visible ancestors,
+unchanged accent, disposal, re-registration and observer cleanup. Test fixtures
+contain no user credentials.
 
 CI runs the same suite on Linux, macOS and Windows. These tests do not claim
 verification in the user's active app or compatibility with every future Hermes
@@ -66,11 +74,17 @@ release. The committed lockfile pins the test dependency tree.
 
 API-key cards are matched by exact `provider-key-*` element IDs. Account rows lack
 provider-ID hooks, so their matching uses the current account-section shape and
-exact title spans (`MiniMax`, `Qwen Code`). Account labels and layout classes are
-private implementation details; localization, reused layout shapes or a Hermes
-update can change the behavior. Recheck both disconnected and connected accounts
-against the target Desktop version after updates. Do not replace these selectors
-with broad substring or ancestor matching.
+exact title spans (`MiniMax`, `Qwen Code`). Skills use the active `tab-skills`
+tour marker and the list-row shape; the wide tab row remains in the DOM even
+when the narrow layout displays a dropdown. Messengers use the current platform
+list shape and exact names from the core messaging catalog. Only individual rows
+are hidden, including their action controls; list containers remain visible.
+
+Labels and layout classes are private implementation details; localization,
+reused layout shapes or a Hermes update can change the behavior. Recheck both
+disconnected and connected accounts, Skills lists and messenger lists against
+the target Desktop version after updates. Do not replace these selectors with
+broad substring or ancestor matching.
 
 No Hermes core, ASAR, preload or palette files are patched. No backend calls,
 account removal, deinstallation or credential reads are performed.

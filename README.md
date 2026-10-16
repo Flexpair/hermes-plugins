@@ -67,7 +67,7 @@ Flexpair-maintained desktop-only plugin, not an official Nous catalog entry.
 It follows the existing desktop plugin layout without Python scaffolding.
 
 [Provider Card Filter](provider-card-filter/) versions Flexpair's private,
-presentation-only account and API-key card overlay in the same repository.
+presentation-only account, API-key card, Skills and messenger-list overlay in the same repository.
 It does not change credentials, model routing or the color palette. Direct DOM
 access makes it a private customization, not a catalog-admissible SDK plugin;
 its separate Chromium suite does not enter the Python plugin matrix.
