@@ -11,9 +11,9 @@ Switching between light and dark automatically applies the corresponding color. 
 
 ## Desktop zoom
 
-Each enable, app startup with the plugin enabled, or plugin reload sets the whole desktop interface to **150%**. Manual zoom shortcuts and the existing appearance setting remain available: mode switches do not reset zoom. Disabling the plugin leaves the current zoom unchanged. Hermes's own zoom setter persists the value, so disabling is not a zoom reset.
+Each enable, app startup with the plugin enabled, or plugin reload sets the whole desktop interface to **150%**. Disabling resets to **Hermes's own default zoom**, the same level used by **View → Actual Size**. It does not restore the previous or manually selected zoom. Manual zoom shortcuts and the existing appearance setting remain available while enabled: mode switches do not reset zoom. Reloading briefly resets to the default before reapplying 150%.
 
-This uses the existing Electron preload bridge `window.hermesDesktop.zoom.setPercent`, not CSS scaling or modifications to Hermes core. That bridge is **not part of the documented plugin SDK**, so its future compatibility is not guaranteed. If the bridge or setter is absent or throws, the plugin skips zoom and still applies the accents.
+This uses the existing Electron preload bridge `window.hermesDesktop.zoom.setPercent`, not CSS scaling or modifications to Hermes core. A reset passes `0`: Hermes's current `percentToZoomLevel` maps non-positive values to `DEFAULT_ZOOM_LEVEL`. No default percentage is hard-coded in the plugin. That bridge and conversion behavior are **not part of the documented plugin SDK**, so future compatibility is not guaranteed. If the bridge is unavailable or throws, accent initialization and cleanup still work.
 
 Mode tracking belongs to the plugin's enable/disable lifecycle. It observes Hermes's root `data-hermes-mode` attribute, which core updates for the actually painted mode. Repeated same-mode updates are ignored; disabling disconnects the observer. No private core imports or core changes are required.
 
@@ -39,7 +39,7 @@ npm test
 hermes plugins validate . --json
 ```
 
-`npm test` rebuilds `desktop/plugin.js` and exercises the bundled plugin with mocked SDK, DOM and desktop bridge APIs. It checks both initial colors, mode switches, absence of UI and palette commands, same-mode updates, delayed boot initialization, observer cleanup on disable, one-time 150% zoom, manual zoom preservation, and missing-bridge fallback. This is not a visual desktop integration test.
+`npm test` rebuilds `desktop/plugin.js` and exercises the bundled plugin with mocked SDK, DOM and desktop bridge APIs. It checks both initial colors, mode switches, absence of UI and palette commands, same-mode updates, delayed boot initialization, observer cleanup on disable, one-time 150% zoom, manual zoom preservation while enabled, reset to Hermes's default regardless of previous zoom or stale storage, re-enable, setter-only hosts, and missing or throwing bridge fallback. This is not a visual desktop integration test.
 
 Commit the rebuilt `desktop/plugin.js`; Hermes loads that artifact directly.
 

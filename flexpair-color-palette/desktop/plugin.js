@@ -8,10 +8,13 @@ var plugin = {
   register(ctx) {
     const desktopWindow = window;
     const zoom = desktopWindow.hermesDesktop?.zoom;
-    try {
-      if (typeof zoom?.setPercent === "function") zoom.setPercent(150);
-    } catch {
-    }
+    const setZoom = (percent) => {
+      try {
+        if (typeof zoom?.setPercent === "function") zoom.setPercent(percent);
+      } catch {
+      }
+    };
+    setZoom(150);
     const root = document.documentElement;
     let lastMode;
     const applyInitialAccent = () => {
@@ -26,6 +29,7 @@ var plugin = {
     ctx.onDispose(() => {
       observer.disconnect();
       setAccentOverride(null);
+      setZoom(0);
     });
   }
 };
