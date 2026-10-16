@@ -59,12 +59,18 @@ Catalog entries come in two tiers:
 
 ## The plugins
 
-### Flexpair fork addition
+### Flexpair fork additions
 
 [Flexpair Color Palette](flexpair-color-palette/) derives from Accent Picker with fixed
 accent overrides `#00FFFF` in dark mode and `#157878` in light mode, without a picker or color commands. This is a
 Flexpair-maintained desktop-only plugin, not an official Nous catalog entry.
 It follows the existing desktop plugin layout without Python scaffolding.
+
+[Provider Card Filter](provider-card-filter/) versions Flexpair's private,
+presentation-only account and API-key card overlay in the same repository.
+It does not change credentials, model routing or the color palette. Direct DOM
+access makes it a private customization, not a catalog-admissible SDK plugin;
+its separate Chromium suite does not enter the Python plugin matrix.
 
 <table>
 <tr>
