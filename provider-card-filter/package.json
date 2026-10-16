@@ -1,0 +1,14 @@
+{
+  "name": "provider-card-filter",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Private presentation-only provider and account overlay for Hermes Desktop.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "test": "node --check plugin.js && node test/keys.mjs && node test/accounts.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.62.1"
+  }
+}

@@ -1,0 +1,45 @@
+name: Provider card filter tests
+
+# Private DOM overlay: separate from catalog manifest validation.
+on:
+  pull_request:
+    paths:
+      - 'provider-card-filter/**'
+      - '.github/workflows/provider-card-filter-tests.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'provider-card-filter/**'
+      - '.github/workflows/provider-card-filter-tests.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Provider filter Chromium · ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: provider-card-filter
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: provider-card-filter/package-lock.json
+      - name: Install locked test dependencies
+        run: npm ci --ignore-scripts
+      - name: Install Chromium and its system dependencies
+        run: npx playwright install --with-deps chromium
+      - name: Test the runtime entrypoint
+        run: npm test
+      - name: Verify tests leave tracked files unchanged
+        run: git diff --exit-code

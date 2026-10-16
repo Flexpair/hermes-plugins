@@ -1,0 +1,82 @@
+[
+  {
+    "provider": "alibaba",
+    "label": "Qwen Cloud",
+    "elementId": "provider-key-Qwen-Cloud"
+  },
+  {
+    "provider": "xiaomi",
+    "label": "Xiaomi MiMo",
+    "elementId": "provider-key-Xiaomi-MiMo"
+  },
+  {
+    "provider": "tencent-tokenhub",
+    "label": "Tencent TokenHub",
+    "elementId": "provider-key-Tencent-TokenHub"
+  },
+  {
+    "provider": "tencent-tokenplan",
+    "label": "Tencent TokenPlan",
+    "elementId": "provider-key-Tencent-TokenPlan"
+  },
+  {
+    "provider": "deepseek",
+    "label": "DeepSeek",
+    "elementId": "provider-key-DeepSeek"
+  },
+  {
+    "provider": "zai",
+    "label": "Z.AI (GLM)",
+    "elementId": "provider-key-Z-AI-GLM-"
+  },
+  {
+    "provider": "kimi-coding",
+    "label": "Kimi / Kimi Coding Plan",
+    "elementId": "provider-key-Kimi-Kimi-Coding-Plan"
+  },
+  {
+    "provider": "kimi-coding-cn",
+    "label": "Kimi / Moonshot (China)",
+    "elementId": "provider-key-Kimi-Moonshot-China-"
+  },
+  {
+    "provider": "stepfun",
+    "label": "StepFun Step Plan",
+    "elementId": "provider-key-StepFun-Step-Plan"
+  },
+  {
+    "provider": "minimax",
+    "label": "MiniMax",
+    "elementId": "provider-key-MiniMax"
+  },
+  {
+    "provider": "minimax-cn",
+    "label": "MiniMax (China)",
+    "elementId": "provider-key-MiniMax-China-"
+  },
+  {
+    "provider": "alibaba-cn",
+    "label": "Alibaba Cloud DashScope (China)",
+    "elementId": "provider-key-Alibaba-Cloud-DashScope-China-"
+  },
+  {
+    "provider": "alibaba-token-plan",
+    "label": "Alibaba Cloud (Token Plan)",
+    "elementId": "provider-key-Alibaba-Cloud-Token-Plan-"
+  },
+  {
+    "provider": "alibaba-token-plan-cn",
+    "label": "Alibaba Cloud (Token Plan, China)",
+    "elementId": "provider-key-Alibaba-Cloud-Token-Plan-China-"
+  },
+  {
+    "provider": "alibaba-coding-plan",
+    "label": "Alibaba Cloud (Coding Plan)",
+    "elementId": "provider-key-Alibaba-Cloud-Coding-Plan-"
+  },
+  {
+    "provider": "alibaba-coding-plan-cn",
+    "label": "Alibaba Cloud (Coding Plan, China)",
+    "elementId": "provider-key-Alibaba-Cloud-Coding-Plan-China-"
+  }
+]
