@@ -1,0 +1,15 @@
+{
+  "name": "flexpair-color-palette",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Fixed Flexpair accents for Hermes Desktop: #00FFFF in dark mode and #157878 in light mode, without a picker.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "test": "npm run build && node --experimental-vm-modules --test test/*.test.mjs",
+    "build": "esbuild src/plugin.tsx --bundle --format=esm --platform=browser --jsx=automatic --external:@hermes/plugin-sdk --external:react --external:react/jsx-runtime --outfile=desktop/plugin.js"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.1"
+  }
+}

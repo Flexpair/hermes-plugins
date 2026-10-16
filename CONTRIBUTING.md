@@ -15,6 +15,12 @@ Thanks for helping. Each top-level directory is one self-contained Hermes plugin
 
 Keep each plugin self-contained: no imports between plugin directories, and its own `tests/`, `pyproject.toml` and `README.md`.
 
+In this Flexpair fork, PR and push CI selects only plugin directories changed in
+the relevant Git diff. Root documentation and CI-only changes do not launch
+plugin jobs. Scheduled and manually triggered runs still check every plugin
+against current core. The lightweight discovery job always runs and tests the
+selection logic; deleted plugins are excluded from the matrix.
+
 ## Releasing
 
 Merging to `main` does not ship anything to users. The release is the catalog pin: open a PR on hermes-agent that sets the plugin's `sha:` in `plugin-catalog/<name>.yaml` to the new commit (keep `subdir:` as it is). Installed copies move on their next `hermes plugins update <name>`. A pin that adds tools, hooks or dependencies asks users to consent again, so ship those as their own pin.
