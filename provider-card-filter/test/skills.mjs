@@ -5,12 +5,30 @@ import { chromium } from '@playwright/test';
 const source = fs.readFileSync(new URL('../plugin.js', import.meta.url), 'utf8');
 const targets = ['page-agent', 'siyuan', 'yuanbao', 'baoyu-infographic'];
 const controls = ['research', 'browser-use', 'siyuan-personal-notes', '中文学习'];
+const installedStates = new Map(targets.map((name, index) => [name, index % 2 === 0]));
 // Fixed, credential-free fixtures mirror CapRow and the Capabilities page tabs.
-const row = (name, catalog = false) => `<div class="group/row row-hover flex w-full shrink-0 items-center rounded-md h-11"><button data-slot="row-button"><span class="min-w-0 flex-1"><span class="block truncate text-[0.78rem] font-normal">${name}</span><span>General skill; Qwen and DeepSeek are optional examples</span></span></button>${catalog ? '<span><button>Install</button></span>' : `<button role="switch" aria-checked="true" aria-label="${name}">Toggle</button>`}</div>`;
+const row = (name, catalog = false, enabled = true) => `<div class="group/row row-hover flex w-full shrink-0 items-center rounded-md h-11"><button data-slot="row-button"><span class="min-w-0 flex-1"><span class="block truncate text-[0.78rem] font-normal">${name}</span><span>General skill; Qwen and DeepSeek are optional examples</span></span></button>${catalog ? '<span><button>Install</button></span>' : `<button role="switch" aria-checked="${enabled}" aria-label="${name}">Toggle</button>`}</div>`;
 const browser = await chromium.launch({ headless: true });
 try {
   const page = await browser.newPage();
-  await page.setContent(`<style>:root { --accent: #c678dd; }</style><main id="app"><section id="capabilities"><div data-tour="page-tabs"><button data-tour="tab-skills" data-active="true">Skills</button><button data-tour="tab-toolsets" data-active="false">Toolsets</button></div><aside class="flex min-h-0 flex-col p-2"><div class="min-h-0 flex-1 overflow-y-auto" id="skills">${controls.map(n => row(n)).join('')}${targets.map(n => row(n)).join('')}<div>Official catalog</div>${targets.map(n => row(n, true)).join('')}</div></aside><div id="detail"><span class="block truncate">siyuan</span>${row('page-agent')}</div></section><section id="other"><aside class="flex min-h-0 flex-col p-2"><div class="overflow-y-auto">${row('yuanbao')}</div></aside></section><div id="chat">page-agent, SiYuan, Yuanbao</div></main>`);
+  await page.setContent(`<style>:root { --accent: #c678dd; }</style><main id="app"><section id="capabilities"><div data-tour="page-tabs"><button data-tour="tab-skills" data-active="true">Skills</button><button data-tour="tab-toolsets" data-active="false">Toolsets</button></div><aside class="flex min-h-0 flex-col p-2"><div class="min-h-0 flex-1 overflow-y-auto" id="skills">${controls.map(n => row(n)).join('')}${targets.map(n => row(n, false, installedStates.get(n))).join('')}<div>Official catalog</div>${targets.map(n => row(n, true)).join('')}</div></aside><div id="detail"><span class="block truncate">siyuan</span>${row('page-agent')}</div></section><section id="other"><aside class="flex min-h-0 flex-col p-2"><div class="overflow-y-auto">${row('yuanbao')}</div></aside></section><div id="chat">page-agent, SiYuan, Yuanbao</div></main>`);
+  const assertSkillControls = async () => {
+    // Let queued observer work complete before checking untouched child controls.
+    await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+    for (const entry of await page.locator('#skills > div.group\\/row').all()) {
+      const toggle = entry.getByRole('switch', { includeHidden: true });
+      if (await toggle.count()) {
+        const name = await toggle.getAttribute('aria-label');
+        assert.equal(await toggle.isVisible(), true, `keep ${name} Toggle visible`);
+        assert.equal(await toggle.getAttribute('aria-checked'), String(installedStates.get(name) ?? true), `preserve ${name} activation state`);
+      } else {
+        const install = entry.getByRole('button', { name: 'Install', exact: true, includeHidden: true });
+        assert.equal(await install.count(), 1, 'catalog row keeps its Install button');
+        assert.equal(await install.isVisible(), true, 'keep catalog Install button visible');
+      }
+    }
+  };
+  await assertSkillControls();
   await page.evaluate(async source => {
     const plugin = (await import(URL.createObjectURL(new Blob([source], { type: 'text/javascript' })))).default;
     window.disposals = [];
@@ -19,6 +37,10 @@ try {
   }, source);
   const rows = page.locator('#skills > div.row-hover');
   assert.equal(await rows.count(), targets.length * 2 + controls.length);
+  assert.equal(await rows.getByRole('switch', { includeHidden: true }).count(), targets.length + controls.length);
+  assert.equal(await rows.getByRole('switch', { checked: false, includeHidden: true }).count(), 2, 'include disabled installed skills');
+  assert.equal(await rows.getByRole('button', { name: 'Install', exact: true, includeHidden: true }).count(), targets.length);
+  await assertSkillControls();
   for (const title of targets) {
     const matches = rows.filter({ has: page.locator('span.block.truncate', { hasText: new RegExp(`^${title}$`) }) });
     assert.equal(await matches.count(), 2, `installed and catalog ${title}`);
@@ -30,30 +52,38 @@ try {
   assert.equal(await page.locator('#other .row-hover').isVisible(), true, 'do not hide unrelated lists');
   await page.locator('#skills').evaluate((node, html) => node.insertAdjacentHTML('beforeend', html), row('page-agent'));
   await page.locator('#skills > .row-hover').last().waitFor({ state: 'visible' });
+  await assertSkillControls();
   await page.locator('#skills > .row-hover').last().locator('span.block.truncate').evaluate(node => { node.firstChild.data = 'my-page-agent'; });
   await page.locator('#skills > .row-hover').last().waitFor({ state: 'visible' });
   await page.locator('[data-tour="tab-skills"]').evaluate(node => node.setAttribute('data-active', 'false'));
   await rows.nth(controls.length).waitFor({ state: 'visible' });
+  await assertSkillControls();
   await page.locator('[data-tour="tab-skills"]').evaluate(node => node.setAttribute('data-active', 'true'));
   await rows.nth(controls.length).waitFor({ state: 'visible' });
   await rows.nth(controls.length).evaluate(node => node.classList.remove('row-hover'));
   await rows.nth(controls.length - 1).waitFor({ state: 'visible' });
   assert.equal(await page.locator('#skills > div').nth(controls.length).isVisible(), true, 'class change restores the former target');
+  await assertSkillControls();
   await page.locator('#skills > div').nth(controls.length).evaluate(node => node.classList.add('row-hover'));
   await rows.nth(controls.length).waitFor({ state: 'visible' });
   await rows.nth(controls.length).evaluate(node => { const parent = node.parentNode; node.remove(); setTimeout(() => parent.appendChild(node), 0); });
   await rows.last().waitFor({ state: 'visible' });
+  await assertSkillControls();
   assert.equal(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--accent').trim()), '#c678dd', 'accent unchanged');
   await page.evaluate(() => window.disposals.pop()());
   for (const entry of await rows.all()) assert.equal(await entry.isVisible(), true, 'dispose restores skill rows');
+  await assertSkillControls();
   assert.equal(await page.locator('[data-hermes-provider-filter]').count(), 0, 'dispose removes markers');
-  await page.locator('#skills').evaluate((node, html) => node.insertAdjacentHTML('beforeend', html), row('siyuan'));
+  await page.locator('#skills').evaluate((node, html) => node.insertAdjacentHTML('beforeend', html), row('siyuan', false, false));
   assert.equal(await rows.last().isVisible(), true, 'observer is stopped');
+  await assertSkillControls();
   await page.evaluate(() => window.registerFilter());
   await rows.last().waitFor({ state: 'visible' });
   assert.equal(await page.locator('[data-hermes-provider-filter="skill"]').count(), 0, 'skill rows are never presentation-filtered');
+  await assertSkillControls();
   await page.evaluate(() => window.disposals.pop()());
-  console.log(JSON.stringify({ skillsRemainVisible: targets, installedAndCatalog: true, neutralSkills: controls, lateRows: true, titleChanges: true, tabScope: true, classChanges: true, reinsertion: true, accentUnchanged: true, disposalAndReregistration: true }));
+  await assertSkillControls();
+  console.log(JSON.stringify({ skillsRemainVisible: targets, installedAndCatalog: true, toggleAndInstallVisible: true, enabledAndDisabledStatesPreserved: true, neutralSkills: controls, lateRows: true, titleChanges: true, tabScope: true, classChanges: true, reinsertion: true, accentUnchanged: true, disposalAndReregistration: true }));
 } finally {
   await browser.close();
 }
