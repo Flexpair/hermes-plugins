@@ -1,12 +1,12 @@
 {
   "name": "provider-card-filter",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "private": true,
-  "description": "Private presentation-only provider and account overlay for Hermes Desktop.",
+  "description": "Private presentation-only provider, account and messenger overlay for Hermes Desktop; skill controls remain visible.",
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "test": "node --check plugin.js && node test/keys.mjs && node test/accounts.mjs"
+    "test": "node --check plugin.js && node test/keys.mjs && node test/accounts.mjs && node test/skills.mjs && node test/messaging.mjs"
   },
   "devDependencies": {
     "@playwright/test": "1.62.1"
