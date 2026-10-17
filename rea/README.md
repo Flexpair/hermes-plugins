@@ -23,6 +23,13 @@ install ships:
   Hermes: it connects through this plugin instead of `rea setup`, finds tools
   through Hermes' tool search, and asks before steps that run or change
   something.
+- `skills/crash-triage/`: from a Linux core dump and the binary that crashed to
+  a root cause and a bug report you can paste into an issue. It reads the crash
+  with `inspect_recorded_crash`, places the program counter with
+  `inspect_binary_layout` and a small standard-library helper that decodes the
+  core's mapped-file list, classifies the crash (NULL dereference, stack
+  overflow, abort, ...), and never runs the program. Adapted from
+  [crashlens](https://github.com/mingleiw/crashlens) (MIT).
 
 ## Install
 
@@ -32,7 +39,8 @@ hermes plugins enable rea
 ```
 
 Then start a new Hermes session and ask, for example, "Use REA to inspect
-/Applications/Notes.app and explain how CSV export works."
+/Applications/Notes.app and explain how CSV export works." or "./parser
+crashed and left ./core. Why?"
 
 Requirements:
 
@@ -41,6 +49,12 @@ Requirements:
 - Nothing else for static JavaScript/Electron/ASAR analysis, archive and
   package inventory, Go/Rust binary metadata, PE resources, .NET metadata and
   saved HAR captures.
+- For core dumps and offline ELF layout (`inspect_recorded_crash`,
+  `inspect_binary_layout`): a Python with pwntools 4.15.0, pyelftools 0.33 and
+  Unicorn 2.1.2, named in `~/.hermes/.env` as
+  `REA_PWNTOOLS_PYTHON=/path/to/venv/bin/python`. Hermes passes MCP servers only
+  a small set of environment variables, so `mcp.json` forwards this one
+  explicitly; a value exported only in your shell does not reach REA.
 - Bring your own engine for the rest: Ghidra plus a JDK, Hopper or IDA for
   native decompilation; JADX and Java for Android code; Binwalk/Unblob for
   firmware extraction; TShark, sigrok or WABT for their formats. REA never
@@ -123,4 +137,6 @@ either is a commit to this repo followed by a reviewed SHA bump in the
 
 REA is made by [morluto](https://github.com/morluto) and released under the MIT
 license. The skill in `skills/reverse-engineer-anything/` is adapted from REA's
-bundled skill; its license is reproduced in [LICENSE](LICENSE).
+bundled skill; its license is reproduced in [LICENSE](LICENSE). The workflow in
+`skills/crash-triage/` is adapted from
+[crashlens](https://github.com/mingleiw/crashlens) by mingleiw (MIT).

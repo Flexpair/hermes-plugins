@@ -164,6 +164,15 @@ its separate Chromium suite does not enter the Python plugin matrix.
 <p>MCP server + skill · about 170 tools, loaded on demand</p>
 </td>
 <td width="50%" valign="top">
+<a href="xchat/"><img src="assets/xchat.jpg" alt="X Chat plugin"></a>
+<h3><a href="xchat/">X Chat</a></h3>
+<code>hermes plugins install xchat</code>
+<p>Talk to Hermes in X's end-to-end encrypted DMs. Hermes runs as the X account you connect: chat with it in your own self-chat ("message yourself"), or give it a separate account and DM that. Messages are decrypted and encrypted locally with X's official Chat XDK, so X only routes ciphertext. Supports encrypted media, threaded replies, group chats with mention gating, and cron delivery. <code>hermes xchat setup</code> shows which account Hermes will run as and registers its keys. Needs an X developer app with chat API access.</p>
+<p>Gateway platform <code>xchat</code> · end-to-end encrypted</p>
+</td>
+</tr>
+<tr>
+<td width="50%" valign="top">
 <h3>More on the way</h3>
 <p>Official plugins move in here as they leave Hermes core or join from their own repos. Browse everything else, from Nous, vendors and the community, in the <a href="https://hermes-agent.nousresearch.com/docs/plugins">plugin catalog</a>.</p>
 </td>
@@ -173,7 +182,7 @@ its separate Chromium suite does not enter the Python plugin matrix.
 
 ### Already used one of these?
 
-Every plugin here used to live somewhere else: Home Assistant and Spotify were built into Hermes core and then briefly had their own repos, Langfuse shipped bundled with core as `observability/langfuse`, and the rest each had a standalone `NousResearch/hermes-*` repo. **You don't need to do anything.**
+Most plugins here used to live somewhere else: Home Assistant and Spotify were built into Hermes core and then briefly had their own repos, Langfuse shipped bundled with core as `observability/langfuse`, and the rest each had a standalone `NousResearch/hermes-*` repo. **You don't need to do anything.**
 
 - **You used the built-in Home Assistant, Spotify or Langfuse:** `hermes update`, or the first start after updating, installs the plugin from the catalog with your existing config, env vars and login.
 - **You installed it from the catalog:** the catalog now points here, so `hermes plugins update <name>` moves your install to this repo and keeps your files.
