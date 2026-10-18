@@ -86,8 +86,9 @@ The suite loads the actual `plugin.js` into Chromium with fixed DOM fixtures. It
 checks target and neutral-provider visibility, connected-account Remove buttons,
 local and official-catalog skill rows, messenger rows, late-rendered rows, title
 and class changes, row reinsertion, active Skills-tab scope, visible ancestors,
-unchanged accent, disposal, re-registration and observer cleanup. Test fixtures
-contain no user credentials.
+unchanged accent, disposal, re-registration and observer cleanup. A controlled
+frame test also checks scan coalescing, scanning on the next frame and cancellation
+of pending work on disposal. Test fixtures contain no user credentials.
 
 CI runs the same suite on Linux, macOS and Windows. These tests do not claim
 verification in the user's active app or compatibility with every future Hermes
@@ -100,7 +101,9 @@ provider-ID hooks, so their matching uses the current account-section shape and
 exact title spans (`MiniMax`, `Qwen Code`). Skills are deliberately left alone.
 Messengers use the current platform list shape and exact names from the core
 messaging catalog. Only individual provider, account and messenger rows are
-hidden, including their action controls; list containers remain visible.
+hidden, including their action controls; list containers remain visible. DOM
+mutations are re-scanned at most once per animation frame, so streaming chat
+text and other frequent updates do not trigger a full document scan per change.
 
 Labels and layout classes are private implementation details; localization,
 reused layout shapes or a Hermes update can change the behavior. Recheck both

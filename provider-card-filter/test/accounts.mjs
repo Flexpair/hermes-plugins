@@ -20,7 +20,8 @@ try {
     const plugin = (await import(URL.createObjectURL(new Blob([source], { type: 'text/javascript' })))).default;
     let dispose;
     plugin.register({ onDispose(fn) { dispose = fn; } });
-    const tick = () => new Promise(resolve => setTimeout(resolve, 0));
+    // The plugin coalesces observer work per animation frame, so one frame must elapse.
+    const tick = () => new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve, 0)));
     const accounts = document.getElementById('accounts');
     const visible = element => element.checkVisibility();
     const titles = () => Array.from(accounts.children).filter(el => el.matches('[data-slot="row-button"], .group.grid'));
@@ -48,7 +49,15 @@ try {
     accounts.insertAdjacentHTML('beforeend', disconnected);
     await tick();
     const observerStopped = titles().every(visible);
-    return { disconnectedHidden, controlsVisible, connectedHidden, controlConnectedVisible, changedTitleRestored, outsideUnaffected, keyHidden, ancestorsVisible, allRestored, observerStopped };
+    // Dispose after the observer queued a coalesced frame but before it runs: the
+    // pending scan must be cancelled, otherwise markers reappear after disposal.
+    plugin.register({ onDispose(fn) { dispose = fn; } });
+    accounts.insertAdjacentHTML('beforeend', disconnected);
+    await 0; // Let the observer callback schedule the frame.
+    dispose();
+    await tick();
+    const disposeCancelsPendingFrame = titles().every(visible) && document.querySelectorAll('[data-hermes-provider-filter]').length === 0;
+    return { disconnectedHidden, controlsVisible, connectedHidden, controlConnectedVisible, changedTitleRestored, outsideUnaffected, keyHidden, ancestorsVisible, allRestored, observerStopped, disposeCancelsPendingFrame };
   }, { source, targets, controls, disconnected: targets.map(t => row(t)).join(''), connected: [...targets, 'Nous Portal'].map(t => row(t, true)).join('') });
   for (const [name, passed] of Object.entries(result)) assert.equal(passed, true, name);
   console.log(JSON.stringify(result, null, 2));

@@ -6,7 +6,7 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "test": "node --check plugin.js && node test/keys.mjs && node test/accounts.mjs && node test/skills.mjs && node test/messaging.mjs"
+    "test": "node --check plugin.js && node test/keys.mjs && node test/accounts.mjs && node test/skills.mjs && node test/messaging.mjs && node test/coalescing.mjs"
   },
   "devDependencies": {
     "@playwright/test": "1.62.1"

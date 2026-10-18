@@ -49,9 +49,22 @@ export default {
         window.hermesDesktop?.logLine?.('[provider-card-filter] rows-hidden=' + next.size);
       }
     };
-    const observer = new MutationObserver(update);
+    // Re-scan at most once per animation frame: chat streaming and other frequent
+    // mutations must not trigger a full document scan per change.
+    let pending = 0;
+    const schedule = () => {
+      if (!pending) pending = requestAnimationFrame(() => {
+        pending = 0;
+        update();
+      });
+    };
+    const observer = new MutationObserver(schedule);
     ctx.onDispose(() => {
       observer.disconnect();
+      if (pending) {
+        cancelAnimationFrame(pending);
+        pending = 0;
+      }
       for (const [row] of marked) row.removeAttribute(marker);
       marked.clear();
       style.remove();
